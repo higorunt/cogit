@@ -29,7 +29,7 @@ O COGIT agora possui **sistema completo de inteligência artificial** integrado!
 
 ### Passo 1: Configurar Chave OpenAI
 ```bash
-export OPENAI_API_KEY="sua_chave_aqui"
+export OPENAI_API_KEY="sua_chave_openai_aqui"
 ```
 
 ### Passo 2: Compilar o Projeto
@@ -37,79 +37,187 @@ export OPENAI_API_KEY="sua_chave_aqui"
 cargo build --release
 ```
 
-### Passo 3: Inicializar Repositório
+### Passo 3: Criar Diretório de Teste Limpo
 ```bash
-./target/release/cogit init
+cd ~
+mkdir cogit-demo
+cd cogit-demo
 ```
 
-### Passo 4: Criar Arquivos de Teste
+### Passo 4: Inicializar Repositório
 ```bash
-echo "fn main() { println!(\"Hello COGIT!\"); }" > main.rs
-echo "# Projeto Teste" > README.md
-echo "console.log('IA integrada!');" > app.js
+/caminho/para/cogit/target/release/cogit init
 ```
 
-### Passo 5: Fazer Commit com IA
+### Passo 5: Criar Arquivos de Código Específicos
 ```bash
-./target/release/cogit commit -m "Primeiro commit com IA"
+# Arquivo Rust com algoritmo
+cat > src/calculator.rs << 'EOF'
+pub struct Calculator {
+    pub result: f64,
+}
+
+impl Calculator {
+    pub fn new() -> Self {
+        Calculator { result: 0.0 }
+    }
+    
+    pub fn add(&mut self, value: f64) -> &mut Self {
+        self.result += value;
+        self
+    }
+    
+    pub fn multiply(&mut self, value: f64) -> &mut Self {
+        self.result *= value;
+        self
+    }
+    
+    pub fn get_result(&self) -> f64 {
+        self.result
+    }
+}
+EOF
+
+# Arquivo Python com classe
+cat > data_processor.py << 'EOF'
+import json
+from typing import List, Dict
+
+class DataProcessor:
+    def __init__(self):
+        self.data = []
+    
+    def load_json(self, filename: str):
+        with open(filename, 'r') as f:
+            self.data = json.load(f)
+    
+    def filter_by_key(self, key: str, value: str) -> List[Dict]:
+        return [item for item in self.data if item.get(key) == value]
+    
+    def aggregate_sum(self, key: str) -> float:
+        return sum(item.get(key, 0) for item in self.data if isinstance(item.get(key), (int, float)))
+EOF
+
+# Arquivo JavaScript com API
+cat > api.js << 'EOF'
+const express = require('express');
+const app = express();
+
+app.use(express.json());
+
+// Endpoint para buscar usuários
+app.get('/users', async (req, res) => {
+    try {
+        const users = await database.getUsers();
+        res.json({ success: true, data: users });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+// Endpoint para criar usuário
+app.post('/users', async (req, res) => {
+    const { name, email, age } = req.body;
+    
+    if (!name || !email) {
+        return res.status(400).json({ success: false, error: 'Nome e email são obrigatórios' });
+    }
+    
+    try {
+        const newUser = await database.createUser({ name, email, age });
+        res.status(201).json({ success: true, data: newUser });
+    } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+    }
+});
+
+module.exports = app;
+EOF
+```
+
+### Passo 6: Fazer Commit com IA
+```bash
+/caminho/para/cogit/target/release/cogit commit -m "Implementar módulos calculator, data_processor e API"
 ```
 
 **Saída Esperada:**
 ```
-✅ Commit criado: a1b2c3d4e5f6...
-🧠 Iniciando análise semântica...
-🔄 Processando: main.rs
-🔄 Processando: README.md
-🔄 Processando: app.js
-🎯 Análise concluída: 3 arquivo(s) processado(s)
-⏱️  Tempo: 1250ms | Tokens: 3000
+Commit criado: a1b2c3d4e5f6...
+Iniciando análise semântica...
+Processando: src/calculator.rs
+Processando: data_processor.py
+Processando: api.js
+Análise concluída: 3 arquivo(s) processado(s)
+Tempo: 2450ms | Tokens: 4500
 ```
 
-### Passo 6: Verificar Índice IA
+### Passo 7: Verificar Índice IA
 ```bash
-./target/release/cogit index
+/caminho/para/cogit/target/release/cogit index
 ```
 
 **Saída Esperada:**
 ```
-🧠 Commits com Análise IA (1):
+Commits com Análise IA (1):
 
-🔹 a1b2c3d4e5f6... (3 arquivo(s))
-   📅 2024-01-15 14:30:25
-   🎯 3000 tokens | ⏱️ 1250ms
+a1b2c3d4e5f6... (3 arquivo(s))
+   2024-01-15 14:30:25
+   4500 tokens | 2450ms
 
-💡 Use 'cogit explain <hash>' para ver detalhes de um commit
+Use 'cogit explain <hash>' para ver detalhes de um commit
 ```
 
-### Passo 7: Explicar Commit
+### Passo 8: Explicar Commit
 ```bash
-./target/release/cogit explain a1b2c3d4e5f6
+/caminho/para/cogit/target/release/cogit explain a1b2c3d4e5f6
 ```
 
 **Saída Esperada:**
 ```
-🧠 Análise do Commit: a1b2c3d4e5f6...
-📅 Criado em: 2024-01-15T14:30:25Z
-📁 Arquivos analisados: 3
-🎯 Tokens processados: 3000
-⏱️  Tempo de processamento: 1250ms
+Análise do Commit: a1b2c3d4e5f6...
+Criado em: 2024-01-15T14:30:25Z
+Arquivos analisados: 3
+Tokens processados: 4500
+Tempo de processamento: 2450ms
 
-📄 main.rs
-   📊 Tamanho: 45 bytes
-   🔗 Hash: 8ab4f9e2
-   📈 Vetor: 1536 dimensões
+src/calculator.rs
+   Tamanho: 387 bytes
+   Hash: 8ab4f9e2
+   Vetor: 1536 dimensões
 
-📄 README.md
-   📊 Tamanho: 15 bytes
-   🔗 Hash: 2c8d5a1f
-   📈 Vetor: 1536 dimensões
+data_processor.py
+   Tamanho: 456 bytes
+   Hash: 2c8d5a1f
+   Vetor: 1536 dimensões
 
-📄 app.js
-   📊 Tamanho: 31 bytes
-   🔗 Hash: 7e3b9c4a
-   📈 Vetor: 1536 dimensões
+api.js
+   Tamanho: 891 bytes
+   Hash: 7e3b9c4a
+   Vetor: 1536 dimensões
 
-💡 Funcionalidade completa de explicação IA em desenvolvimento...
+Funcionalidade completa de explicação IA em desenvolvimento...
+```
+
+### Passo 9: Teste de Commit Sem IA
+```bash
+echo "# Documentação técnica" > docs.md
+/caminho/para/cogit/target/release/cogit commit -m "Adicionar documentação" --skip-ai
+```
+
+**Saída Esperada:**
+```
+Commit criado: b2c3d4e5f6a7...
+```
+
+### Passo 10: Verificar Status
+```bash
+/caminho/para/cogit/target/release/cogit status
+```
+
+**Saída Esperada:**
+```
+Status: Repositório COGIT com 2 commit(s)
+Commits com análise IA: 1
 ```
 
 ## 📁 Estrutura Gerada

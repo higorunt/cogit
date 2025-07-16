@@ -141,12 +141,24 @@ impl EmbeddingEngine {
             return false;
         }
         
-        // Lista de extensões de código suportadas
+        // Ignorar arquivos de documentação e configuração específicos
+        let ignored_files = [
+            "README.md", "CHANGELOG.md", "LICENSE", "LICENSE.txt",
+            "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md",
+            "GUIA_DESENVOLVIMENTO.md", "CONTEXTO_CHATGPT.md", 
+            "TESTE_FUNCIONALIDADES.md", "STATUS_SEMINARIO.md"
+        ];
+        
+        if ignored_files.contains(&file_name) {
+            return false;
+        }
+        
+        // Lista de extensões de código fonte (excluindo documentação)
         let code_extensions = [
             ".rs", ".py", ".js", ".ts", ".java", ".cpp", ".c", ".h",
             ".go", ".rb", ".php", ".swift", ".kt", ".scala", ".clj",
             ".sh", ".bash", ".sql", ".html", ".css", ".json", ".xml",
-            ".yaml", ".yml", ".toml", ".md", ".txt"
+            ".yaml", ".yml", ".toml"
         ];
         
         if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
@@ -255,7 +267,7 @@ impl EmbeddingEngine {
         
         // Processar cada arquivo
         for file_path in files_to_process {
-            println!("🔄 Processando: {}", file_path.display());
+            println!("Processando: {}", file_path.display());
             
             match self.generate_file_embedding(&file_path).await {
                 Ok(embedding) => {
