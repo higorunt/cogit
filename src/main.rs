@@ -44,6 +44,15 @@ enum Commands {
     },
     /// Lista todos os commits com embeddings IA disponíveis
     Index,
+    /// Faz perguntas sobre o código usando IA e embeddings
+    Ask {
+        /// Pergunta sobre o código ou commits
+        #[arg(long = "question", short = 'q')]
+        question: String,
+        /// Limitar busca a um commit específico (opcional)
+        #[arg(long)]
+        commit: Option<String>,
+    },
 }
 
 #[tokio::main]
@@ -208,6 +217,28 @@ async fn main() {
                     }
                 }
                 Err(e) => eprintln!("Erro ao acessar índice IA: {}", e),
+            }
+        }
+        Commands::Ask { question, commit } => {
+            let cogit_dir = std::path::Path::new(".").join(".cogit");
+            match EmbeddingEngine::new(cogit_dir) {
+                Ok(mut engine) => {
+                    // Obter chave da API via variável de ambiente
+                    if let Ok(api_key) = std::env::var("OPENAI_API_KEY") {
+                        engine.set_api_key(api_key);
+                        
+                        match engine.ask_question(&question, commit.as_deref()).await {
+                            Ok(answer) => {
+                                println!("Resposta:");
+                                println!("{}", answer);
+                            }
+                            Err(e) => eprintln!("Erro ao processar pergunta: {}", e),
+                        }
+                    } else {
+                        eprintln!("Para usar IA, defina: export OPENAI_API_KEY=sua_chave");
+                    }
+                }
+                Err(e) => eprintln!("Erro ao acessar sistema IA: {}", e),
             }
         }
     }

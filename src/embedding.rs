@@ -78,6 +78,32 @@ struct Usage {
     total_tokens: u32,
 }
 
+/// Request para API OpenAI Chat Completion
+#[derive(Debug, Serialize)]
+struct ChatRequest {
+    model: String,
+    messages: Vec<ChatMessage>,
+    temperature: f32,
+    max_tokens: u32,
+}
+
+#[derive(Debug, Serialize, Deserialize)]
+struct ChatMessage {
+    role: String,
+    content: String,
+}
+
+/// Response da API OpenAI Chat Completion
+#[derive(Debug, Deserialize)]
+struct ChatResponse {
+    choices: Vec<ChatChoice>,
+}
+
+#[derive(Debug, Deserialize)]
+struct ChatChoice {
+    message: ChatMessage,
+}
+
 /// Motor principal de embeddings
 pub struct EmbeddingEngine {
     config: OpenAIConfig,
@@ -348,5 +374,176 @@ impl EmbeddingEngine {
         
         commits.sort();
         Ok(commits)
+    }
+    
+    /// Calcula a similaridade de cosseno entre dois vetores
+    fn cosine_similarity(&self, vec1: &[f32], vec2: &[f32]) -> f32 {
+        if vec1.len() != vec2.len() {
+            return 0.0;
+        }
+        
+        let dot_product: f32 = vec1.iter().zip(vec2.iter()).map(|(a, b)| a * b).sum();
+        let magnitude1: f32 = vec1.iter().map(|x| x * x).sum::<f32>().sqrt();
+        let magnitude2: f32 = vec2.iter().map(|x| x * x).sum::<f32>().sqrt();
+        
+        if magnitude1 == 0.0 || magnitude2 == 0.0 {
+            return 0.0;
+        }
+        
+        dot_product / (magnitude1 * magnitude2)
+    }
+    
+    /// Busca os embeddings mais similares à pergunta
+    async fn find_relevant_embeddings(&self, question: &str, commit_filter: Option<&str>) -> Result<Vec<(String, FileEmbedding, f32)>, CogitError> {
+        // Gerar embedding da pergunta
+        let question_embedding = self.call_openai_embedding(question).await?;
+        
+        // Obter lista de commits a buscar
+        let commits_to_search = if let Some(commit_hash) = commit_filter {
+            vec![commit_hash.to_string()]
+        } else {
+            self.list_embedded_commits()?
+        };
+        
+        let mut results = Vec::new();
+        
+        // Buscar em cada commit
+        for commit_hash in commits_to_search {
+            if let Ok(index) = self.load_embedding_index(&commit_hash) {
+                for file_embedding in index.files {
+                    let similarity = self.cosine_similarity(&question_embedding, &file_embedding.embedding_vector);
+                    if similarity > 0.1 { // Threshold mínimo
+                        results.push((commit_hash.clone(), file_embedding, similarity));
+                    }
+                }
+            }
+        }
+        
+        // Ordenar por similaridade (maior para menor)
+        results.sort_by(|a, b| b.2.partial_cmp(&a.2).unwrap_or(std::cmp::Ordering::Equal));
+        
+        // Retornar apenas os mais relevantes (máximo 5)
+        results.truncate(5);
+        
+        Ok(results)
+    }
+    
+    /// Constrói contexto para a resposta baseado nos embeddings mais relevantes
+    async fn build_context(&self, relevant_embeddings: &[(String, FileEmbedding, f32)]) -> Result<String, CogitError> {
+        let mut context = String::new();
+        
+        context.push_str("Contexto dos arquivos relevantes encontrados:\n\n");
+        
+        for (commit_hash, file_embedding, similarity) in relevant_embeddings {
+            context.push_str(&format!("Arquivo: {} (Commit: {}, Similaridade: {:.2})\n", 
+                file_embedding.file_path, 
+                &commit_hash[..8],
+                similarity
+            ));
+            
+            // Tentar carregar o conteúdo atual do arquivo se ainda existe
+            if let Ok(content) = std::fs::read_to_string(&file_embedding.file_path) {
+                context.push_str("Conteúdo:\n```\n");
+                context.push_str(&content);
+                context.push_str("\n```\n\n");
+            } else {
+                context.push_str("(Arquivo não encontrado ou foi removido)\n\n");
+            }
+        }
+        
+        Ok(context)
+    }
+    
+    /// Chama a API OpenAI Chat Completion
+    async fn call_openai_chat(&self, messages: Vec<ChatMessage>) -> Result<String, CogitError> {
+        if self.config.api_key.is_empty() {
+            return Err(CogitError::IoError(
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidInput,
+                    "Chave da API OpenAI não configurada"
+                )
+            ));
+        }
+        
+        let request = ChatRequest {
+            model: "gpt-3.5-turbo".to_string(),
+            messages,
+            temperature: 0.7,
+            max_tokens: 1000,
+        };
+        
+        let response = self.client
+            .post(&format!("{}/chat/completions", self.config.base_url))
+            .header("Authorization", format!("Bearer {}", self.config.api_key))
+            .header("Content-Type", "application/json")
+            .json(&request)
+            .send()
+            .await
+            .map_err(|e| CogitError::IoError(
+                std::io::Error::new(std::io::ErrorKind::Other, e.to_string())
+            ))?;
+        
+        if !response.status().is_success() {
+            let error_text = response.text().await.unwrap_or_else(|_| "Erro desconhecido".to_string());
+            return Err(CogitError::IoError(
+                std::io::Error::new(
+                    std::io::ErrorKind::Other,
+                    format!("Erro da API OpenAI: {}", error_text)
+                )
+            ));
+        }
+        
+        let chat_response: ChatResponse = response
+            .json()
+            .await
+            .map_err(|e| CogitError::IoError(
+                std::io::Error::new(std::io::ErrorKind::InvalidData, e.to_string())
+            ))?;
+        
+        if let Some(choice) = chat_response.choices.first() {
+            Ok(choice.message.content.clone())
+        } else {
+            Err(CogitError::IoError(
+                std::io::Error::new(
+                    std::io::ErrorKind::InvalidData,
+                    "Resposta da API OpenAI vazia"
+                )
+            ))
+        }
+    }
+    
+    /// Função principal: faz pergunta sobre o código usando embeddings e IA
+    pub async fn ask_question(&self, question: &str, commit_filter: Option<&str>) -> Result<String, CogitError> {
+        println!("🔍 Buscando informações relevantes...");
+        
+        // Buscar embeddings mais similares à pergunta
+        let relevant_embeddings = self.find_relevant_embeddings(question, commit_filter).await?;
+        
+        if relevant_embeddings.is_empty() {
+            return Ok("Não encontrei informações relevantes para responder sua pergunta. Certifique-se de que existem commits com análise IA.".to_string());
+        }
+        
+        println!("📋 Encontrados {} arquivo(s) relevante(s)", relevant_embeddings.len());
+        
+        // Construir contexto com os arquivos mais relevantes
+        let context = self.build_context(&relevant_embeddings).await?;
+        
+        // Preparar mensagens para o chat
+        let system_message = ChatMessage {
+            role: "system".to_string(),
+            content: "Você é um assistente especializado em análise de código. Use o contexto fornecido para responder perguntas sobre o código de forma clara e útil. Se a pergunta não puder ser respondida com o contexto, diga isso claramente.".to_string(),
+        };
+        
+        let context_message = ChatMessage {
+            role: "user".to_string(),
+            content: format!("{}\n\nPergunta: {}", context, question),
+        };
+        
+        println!("🤖 Processando resposta com IA...");
+        
+        // Obter resposta da IA
+        let response = self.call_openai_chat(vec![system_message, context_message]).await?;
+        
+        Ok(response)
     }
 } 
