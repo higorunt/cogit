@@ -1,7 +1,6 @@
 use chrono::{DateTime, Utc};
 use reqwest::Client;
 use serde::{Deserialize, Serialize};
-use std::collections::HashMap;
 use std::fs;
 use std::path::{Path, PathBuf};
 
@@ -167,9 +166,9 @@ impl EmbeddingEngine {
             return false;
         }
         
-        // Ignorar arquivos de documentação e configuração específicos
+        // Ignorar apenas arquivos de documentação específicos (manter README.md para IA)
         let ignored_files = [
-            "README.md", "CHANGELOG.md", "LICENSE", "LICENSE.txt",
+            "CHANGELOG.md", "LICENSE", "LICENSE.txt",
             "CONTRIBUTING.md", "CODE_OF_CONDUCT.md", "SECURITY.md",
             "GUIA_DESENVOLVIMENTO.md", "CONTEXTO_CHATGPT.md", 
             "TESTE_FUNCIONALIDADES.md", "STATUS_SEMINARIO.md"
@@ -179,12 +178,12 @@ impl EmbeddingEngine {
             return false;
         }
         
-        // Lista de extensões de código fonte (excluindo documentação)
+        // Lista de extensões válidas para análise IA (código + documentação relevante)
         let code_extensions = [
             ".rs", ".py", ".js", ".ts", ".java", ".cpp", ".c", ".h",
             ".go", ".rb", ".php", ".swift", ".kt", ".scala", ".clj",
             ".sh", ".bash", ".sql", ".html", ".css", ".json", ".xml",
-            ".yaml", ".yml", ".toml"
+            ".yaml", ".yml", ".toml", ".md", ".txt"
         ];
         
         if let Some(extension) = path.extension().and_then(|e| e.to_str()) {
