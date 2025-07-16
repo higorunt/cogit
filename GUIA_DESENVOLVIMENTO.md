@@ -2,7 +2,7 @@
 
 ## Sobre o Projeto
 
-COGIT é um sistema de controle de versão desenvolvido em Rust como projeto educacional, demonstrando como reimplementar funcionalidades básicas do Git com maior segurança de memória e performance.
+COGIT é um sistema de controle de versão inteligente desenvolvido em Rust que revoluciona o versionamento tradicional através de inteligência artificial. Começou como projeto educacional, mas evoluiu para uma ferramenta que compreende semanticamente as mudanças de código através de embeddings vetoriais.
 
 ## Configuração do Ambiente
 
@@ -91,6 +91,8 @@ cogit status
 ├── objects/            # Armazenamento content-addressable
 │   └── XX/             # Primeiros 2 chars do hash
 │       └── XXXXXX...   # Resto do hash (objetos)
+├── index/              # 🆕 NOVO: Índice de embeddings IA
+│   └── <commit_hash>.json  # Vetores semânticos por commit
 └── refs/
     └── heads/
         └── main        # Referência da branch principal
@@ -98,18 +100,32 @@ cogit status
 
 ### Componentes Principais
 
+#### Core System
 1. **CogitRepository**: Estrutura principal do repositório
 2. **Commit**: Representa um commit no sistema
 3. **TreeEntry**: Entrada na árvore de arquivos
 4. **CogitError**: Sistema de tratamento de erros
 
+#### 🆕 Sistema de Inteligência (Nova Fase)
+5. **EmbeddingEngine**: Módulo para integração com OpenAI
+6. **SemanticIndex**: Gerenciamento do índice vetorial
+7. **FileAnalyzer**: Análise de arquivos modificados
+8. **EmbeddingStorage**: Persistência de vetores em JSON
+
 ### Tecnologias Utilizadas
 
+#### Core System
 - **clap**: Interface de linha de comando
 - **sha2**: Hashing SHA-256
 - **serde**: Serialização/deserialização
 - **serde_json**: Formato JSON para objetos
 - **chrono**: Manipulação de timestamps
+
+#### Inteligência Artificial (Nova Fase)
+- **reqwest**: Cliente HTTP para API OpenAI
+- **tokio**: Runtime assíncrono para chamadas de API
+- **OpenAI API**: text-embedding-3-small para geração de vetores
+- **Embeddings Storage**: Sistema de índice vetorial em JSON
 
 ## Testando o Sistema
 
@@ -182,20 +198,27 @@ cogit status
 | Branches | Completo | Básico |
 | Interface | Inglês | Português |
 
-## Desenvolvimento Futuro
+## Desenvolvimento Atual: Era da IA
 
-### Próximas Funcionalidades
+### 🚀 Funcionalidades em Implementação (Prioridade Alta)
+- **Embedding Engine**: Integração com OpenAI text-embedding-3-small
+- **Semantic Commits**: `cogit commit` com análise automática de mudanças
+- **Intelligent Index**: Sistema `.cogit/index/` para armazenamento vetorial
+- **Smart Commands**: `cogit explain <commit>` e `cogit index`
+
+### 📋 Próximas Funcionalidades (Backlog)
 - Sistema de staging area
 - Suporte completo a branches
-- Merge de branches
-- Diff entre commits
-- Compressão de objetos
+- Merge de branches com análise semântica
+- Diff inteligente entre commits
+- Busca vetorial no histórico
 
-### Melhorias Técnicas
-- Testes unitários
-- Benchmarks de performance
-- Documentação de API
-- Tratamento de conflitos
+### ⚡ Melhorias Técnicas
+- Testes unitários para módulos IA
+- Benchmarks de performance da API
+- Cache local de embeddings
+- Rate limiting para OpenAI
+- Compressão de vetores
 
 ## Contribuindo
 
