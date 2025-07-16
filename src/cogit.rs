@@ -100,7 +100,7 @@ impl CogitRepository {
     }
 
     /// Calcula o hash SHA-256 de um conteúdo
-    fn calculate_hash(content: &[u8]) -> String {
+    pub fn calculate_hash(content: &[u8]) -> String {
         let mut hasher = Sha256::new();
         hasher.update(content);
         format!("{:x}", hasher.finalize())
