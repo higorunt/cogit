@@ -99,4 +99,4 @@ Para contribuir ou entender melhor o projeto, consulte:
 
 ## Licença
 
-Projeto educacional - Universidade de Brasília, Faculdade do Gama 
+Projeto educacional - Universidade de Brasília
