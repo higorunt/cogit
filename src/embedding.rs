@@ -516,7 +516,19 @@ impl EmbeddingEngine {
         println!("🔍 Buscando informações relevantes...");
         
         // Buscar embeddings mais similares à pergunta
-        let relevant_embeddings = self.find_relevant_embeddings(question, commit_filter).await?;
+        let relevant_embeddings = match self.find_relevant_embeddings(question, commit_filter).await {
+            Ok(embeddings) => embeddings,
+            Err(e) => {
+                // Verificar se é erro de chave da API
+                if let CogitError::IoError(io_err) = &e {
+                    if io_err.kind() == std::io::ErrorKind::InvalidInput && 
+                       io_err.to_string().contains("Chave da API OpenAI não configurada") {
+                        return Ok("❌ Erro: Chave da API OpenAI não configurada.\nPara usar o comando 'ask', defina: export OPENAI_API_KEY=sua_chave".to_string());
+                    }
+                }
+                return Err(e);
+            }
+        };
         
         if relevant_embeddings.is_empty() {
             return Ok("Não encontrei informações relevantes para responder sua pergunta. Certifique-se de que existem commits com análise IA.".to_string());

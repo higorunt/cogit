@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>COGIT - Demonstração Terminal</title>
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            background-color: #0c0c0c;
+            color: #cccccc;
+            font-family: 'Consolas', 'Monaco', 'Courier New', monospace;
+            font-size: 14px;
+            line-height: 1.4;
+        }
+        
+        .terminal {
+            background-color: #0c0c0c;
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+        }
+        
+        .terminal-header {
+            background-color: #2d2d30;
+            margin: -20px -20px 20px -20px;
+            padding: 10px 20px;
+            border-radius: 8px 8px 0 0;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .terminal-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+        }
+        
+        .red { background-color: #ff5f56; }
+        .yellow { background-color: #ffbd2e; }
+        .green { background-color: #27ca3f; }
+        
+        .prompt {
+            color: #4ec9b0;
+            margin-right: 5px;
+        }
+        
+        .command {
+            color: #dcdcaa;
+        }
+        
+        .output {
+            color: #cccccc;
+            margin: 5px 0;
+        }
+        
+        .success {
+            color: #4ec9b0;
+        }
+        
+        .info {
+            color: #569cd6;
+        }
+        
+        .warning {
+            color: #dcdcaa;
+        }
+        
+        .error {
+            color: #f44747;
+        }
+        
+        .staged {
+            color: #4ec9b0;
+        }
+        
+        .untracked {
+            color: #f44747;
+        }
+        
+        .modified {
+            color: #dcdcaa;
+        }
+        
+        .diff-added {
+            color: #4ec9b0;
+            background-color: rgba(78, 201, 176, 0.1);
+            padding: 2px 4px;
+        }
+        
+        .diff-removed {
+            color: #f44747;
+            background-color: rgba(244, 71, 71, 0.1);
+            padding: 2px 4px;
+        }
+        
+        .commit-hash {
+            color: #ce9178;
+            font-family: monospace;
+        }
+        
+        .file-content {
+            background-color: #1e1e1e;
+            border-left: 3px solid #007acc;
+            padding: 10px;
+            margin: 10px 0;
+            font-size: 12px;
+        }
+        
+        .section {
+            margin: 20px 0;
+            border-bottom: 1px solid #333;
+            padding-bottom: 20px;
+        }
+        
+        .comment {
+            color: #6a9955;
+            font-style: italic;
+        }
+    </style>
+</head>
+<body>
+    <div class="terminal">
+        <div class="terminal-header">
+            <div class="terminal-dot red"></div>
+            <div class="terminal-dot yellow"></div>
+            <div class="terminal-dot green"></div>
+            <span style="color: #cccccc; margin-left: 10px;">Terminal - COGIT Demonstração</span>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Configuração inicial do projeto</div>
+            <div><span class="prompt">higorunt@LAPTOP:~$</span> <span class="command">mkdir test-api-cogit && cd test-api-cogit</span></div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit init</span></div>
+            <div class="output">Repositório COGIT inicializado em: .</div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Criando arquivos iniciais</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">echo "# API REST - Sistema de Usuários..." > README.md</span></div>
+            <div class="file-content">
+                <div class="comment"># Conteúdo do README.md:</div>
+                # API REST - Sistema de Usuários<br>
+                Projeto de exemplo para testar COGIT<br><br>
+                ## Estrutura<br>
+                - app.py: API principal<br>
+                - models.py: Modelos de dados
+            </div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">echo "flask==2.3.0..." > requirements.txt</span></div>
+            <div class="file-content">
+                <div class="comment"># Conteúdo do requirements.txt:</div>
+                flask==2.3.0<br>
+                sqlalchemy==2.0.0<br>
+                marshmallow==3.19.0
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Primeiro commit</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit add .</span></div>
+            <div class="output">Adicionado: requirements.txt</div>
+            <div class="output">Adicionado: README.md</div>
+            <div class="success">✅ 2 arquivo(s) adicionado(s) ao staging area</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit status</span></div>
+            <div class="info">📊 Repositório COGIT com 0 commit(s)</div>
+            <div class="staged">🟢 Mudanças no staging area:</div>
+            <div class="staged">  adicionado: requirements.txt</div>
+            <div class="staged">  adicionado: README.md</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit commit -m "Projeto inicial: estrutura básica e dependências"</span></div>
+            <div class="output">📦 Criando commit com 2 arquivo(s) staged...</div>
+            <div class="success">✅ Commit criado: <span class="commit-hash">abe2b52f</span></div>
+            <div class="info">🧠 Iniciando análise semântica otimizada...</div>
+            <div class="success">✅ Análise concluída: 2 arquivo(s) processado(s)</div>
+            <div class="info">⏱  Tempo: 6425ms | 🔢 Tokens: 2000</div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Implementando API básica</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">echo "from flask import Flask..." > app.py</span></div>
+            <div class="file-content">
+                <div class="comment"># Conteúdo resumido do app.py:</div>
+                from flask import Flask, request, jsonify<br><br>
+                app = Flask(__name__)<br>
+                users = []<br><br>
+                @app.route('/users', methods=['GET'])<br>
+                def get_users():<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;return jsonify(users)<br><br>
+                @app.route('/users', methods=['POST'])<br>
+                def create_user():<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;# ... código de criação ...
+            </div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit add app.py</span></div>
+            <div class="success">✅ Arquivo app.py adicionado ao staging area</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit commit -m "Implementa API básica de usuários (GET/POST)"</span></div>
+            <div class="success">✅ Commit criado: <span class="commit-hash">edd74f9e</span></div>
+            <div class="info">✅ Análise concluída: 3 arquivo(s) processado(s)</div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Adicionando validação</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">echo "from marshmallow import Schema..." > models.py</span></div>
+            <div class="file-content">
+                <div class="comment"># Conteúdo resumido do models.py:</div>
+                from marshmallow import Schema, fields<br><br>
+                class UserSchema(Schema):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;name = fields.Str(required=True)<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;email = fields.Email(required=True)<br><br>
+                def validate_user_data(data):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;# ... lógica de validação ...
+            </div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit status</span></div>
+            <div class="info">📊 Repositório COGIT com 2 commit(s)</div>
+            <div class="modified">🟡 Mudanças não staged:</div>
+            <div class="modified">  modificado: app.py</div>
+            <div class="untracked">🔴 Arquivos não rastreados:</div>
+            <div class="untracked">  models.py</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit add .</span></div>
+            <div class="success">✅ 2 arquivo(s) adicionado(s) ao staging area</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit commit -m "Adiciona validação de dados e endpoint GET por ID"</span></div>
+            <div class="success">✅ Commit criado: <span class="commit-hash">d44c5b02</span></div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Adicionando utilitários</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">echo "import re..." > utils.py</span></div>
+            <div class="file-content">
+                <div class="comment"># Conteúdo resumido do utils.py:</div>
+                import re<br>
+                from datetime import datetime<br><br>
+                def is_valid_email(email):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;# ... validação de email ...<br><br>
+                def log_request(method, endpoint, status):<br>
+                &nbsp;&nbsp;&nbsp;&nbsp;# ... logging de requisições ...
+            </div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit add utils.py</span></div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit commit -m "Adiciona módulo de utilitários"</span></div>
+            <div class="success">✅ Commit criado: <span class="commit-hash">6831b70d</span></div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Visualizando histórico e status final</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit log</span></div>
+            <div class="output"> - Adiciona módulo de utilitários (email, logging, formatação)</div>
+            <div class="output"> - Adiciona validação de dados e endpoint GET por ID</div>
+            <div class="output"> - Implementa API básica de usuários (GET/POST)</div>
+            <div class="output"> - Projeto inicial: estrutura básica e dependências</div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit status</span></div>
+            <div class="info">📊 Repositório COGIT com 5 commit(s)</div>
+            <div class="success">✨ Working tree limpo - nenhuma mudança para commit</div>
+            <div class="info">🤖 Commits com análise IA: 5</div>
+        </div>
+
+        <div class="section">
+            <div class="comment"># Funcionalidades avançadas do COGIT</div>
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit index</span></div>
+            <div class="info">Commits com Análise IA (5):</div>
+            <div class="output">
+                <span class="commit-hash">6831b70d</span> (5 arquivo(s)) - 5000 tokens | 3308ms<br>
+                <span class="commit-hash">d44c5b02</span> (4 arquivo(s)) - 4000 tokens | 3095ms<br>
+                <span class="commit-hash">edd74f9e</span> (3 arquivo(s)) - 3000 tokens | 4768ms
+            </div>
+            
+            <div><span class="prompt">higorunt@LAPTOP:~/test-api-cogit$</span> <span class="command">cogit ask -q "Como funciona a validação de usuários?"</span></div>
+            <div class="info">🔍 Buscando informações relevantes...</div>
+            <div class="info">📋 Encontrados 5 arquivo(s) relevante(s)</div>
+            <div class="info">🤖 Processando resposta com IA...</div>
+            <div class="output">
+                <strong>Resposta:</strong><br>
+                A validação de usuários é feita no endpoint POST /users através da função validate_user_data(). 
+                Os dados são validados usando Marshmallow Schema, retornando erros (400) se inválidos ou 
+                criando o usuário (201) se válidos.
+            </div>
+        </div>
+    </div>
+</body>
+</html> 
